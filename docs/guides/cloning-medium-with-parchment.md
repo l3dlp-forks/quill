@@ -14,14 +14,14 @@ redirect_from:
 </style>
 <!-- head -->
 
-To provide a consistent editing experience, you need consistent both data and predictable behaviors. The DOM is unfortunately lacking on both of these to be a high quality data store. The solution for modern editors is to maintain its own document model to represent its contents. [Parchment](https://github.com/quilljs/parchment/) is that solution for Quill. It is organized in its own codebase with its own API layer. Through Parchment, you can customize the content and formats Quill recognizes, or add entirely new ones.
+To provide a consistent editing experience, you need both consistent data and predictable behaviors. The DOM unfortunately lacks both of these. The solution for modern editors is to maintain their own document model to represent their contents. [Parchment](https://github.com/quilljs/parchment/) is that solution for Quill. It is organized in its own codebase with its own API layer. Through Parchment you can customize the content and formats Quill recognizes, or add entirely new ones.
 
-In this guide, we will use the building blocks provided by Parchment and Quill to replicate the editor on Medium. We will to start with the bare bones of Quill, without any themes, extraneous modules, or formats. At this basic level, Quill only understand plain text. But by the end of this guide, links, videos, and even Tweets will be understood.
+In this guide, we will use the building blocks provided by Parchment and Quill to replicate the editor on Medium. We will start with the bare bones of Quill, without any themes, extraneous modules, or formats. At this basic level, Quill only understands plain text. But by the end of this guide, links, videos, and even tweets will be understood.
 
 
 ### Groundwork
 
-Let's start without even using Quill, with just a textarea and button, hooked up to a dummy event listener. We'll use jQuery for convenience throughout this guide, but neither Quill nor Parchment depends on this. We'll also add some basic styling, with the help of [Google Fonts](https://fonts.google.com/) and [Font Awesome](http://fontawesome.io/). None of this has anything to do with Quill or Parchment, so we'll move through quickly.
+Let's start without even using Quill, with just a textarea and button, hooked up to a dummy event listener. We'll use jQuery for convenience throughout this guide, but neither Quill nor Parchment depends on this. We'll also add some basic styling, with the help of [Google Fonts](https://fonts.google.com/) and [Font Awesome](https://fontawesome.io/). None of this has anything to do with Quill or Parchment, so we'll move through quickly.
 
 <div data-height="400" data-theme-id="23269" data-slug-hash="oLVAKZ" data-default-tab="result" data-embed-version="2" class="codepen"></div>
 
@@ -32,13 +32,13 @@ Next, we'll replace the textarea with Quill core, absent of themes, formats and 
 
 <div data-height="400" data-theme-id="23269" data-slug-hash="QEoZQb" data-default-tab="result" data-embed-version="2" class="codepen"></div>
 
-Like the DOM, a Parchment document is a tree. Its nodes, called Blots, are an abstraction over DOM Nodes. A few blots are already defined for us: Scroll, Block, Inline, Text and Break. As you type, a Text blot is synchronized with the corresponding DOM Text node; enters are handled by creating a new Block blot. In Parchment, Blots that can have children must, so empty Blocks are filled with a Break blot. This makes handling leaves simple and predictable. All this is organized under a root Scroll blot.
+Like the DOM, a Parchment document is a tree. Its nodes, called Blots, are an abstraction over DOM Nodes. A few blots are already defined for us: Scroll, Block, Inline, Text and Break. As you type, a Text blot is synchronized with the corresponding DOM Text node; enters are handled by creating a new Block blot. In Parchment, Blots that can have children must have at least one child, so empty Blocks are filled with a Break blot. This makes handling leaves simple and predictable. All this is organized under a root Scroll blot.
 
 You cannot observe an Inline blot by just typing at this point since it does not contribute meaningful structure or formatting to the document. A valid Quill document must be canonical and compact. There is only one valid DOM tree that can represent a given document, and that DOM tree contains the minimal number of nodes.
 
 Since `<p><span>Text</span></p>` and `<p>Text</p>` represent the same content, the former is invalid and it is part of Quill's optimization process to unwrap the `<span>`. Similarly, once we add formatting, `<p><em>Te</em><em>st</em></p>` and `<p><em><em>Test</em></em></p>` are also invalid, as they are not the most compact representation.
 
-Because of these contraints, **Quill cannot support arbitrary DOM trees and HTML changes**. But as we will see, the consistency and predicability this structure provides enables us to easily build rich editing experiences.
+Because of these constraints, **Quill cannot support arbitrary DOM trees and HTML changes**. But as we will see, the consistency and predicability this structure provides enables us to easily build rich editing experiences.
 
 
 ### Basic Formatting
@@ -76,7 +76,7 @@ quill.formatText(0, 4, 'italic', true);
 // quill.formatText(0, 4, 'myitalic', true);
 ```
 
-Let's get rid of our dummy button handler and hook up the bold and italic buttons to Quill's [`format()`](/docs/api/#format). We will hardcode `true` to always add formatting for simplicity. In your application, you will can use [`getFormat()`](/docs/api/#getformat) to retrieve the current formatting over a arbitrary range to decide whether to add or remove a format. The [Toolbar](/docs/modules/toolbar/) module implements this for Quill, and we will not reimplement it here.
+Let's get rid of our dummy button handler and hook up the bold and italic buttons to Quill's [`format()`](/docs/api/#format). We will hardcode `true` to always add formatting for simplicity. In your application, you can use [`getFormat()`](/docs/api/#getformat) to retrieve the current formatting over a arbitrary range to decide whether to add or remove a format. The [Toolbar](/docs/modules/toolbar/) module implements this for Quill, and we will not reimplement it here.
 
 Open your developer console and try out Quill's [APIs](/docs/api/) on your new bold and italic formats! Make sure to set the context to the correct CodePen iframe to be able to access the `quill` variable in the demo.
 
@@ -156,7 +156,7 @@ Try setting some text to H1, and in your console, run `quill.getContents()`. You
 
 Now let's implement our first leaf Blot. While our previous Blot examples contribute formatting and implement `format()`, leaf Blots contribute content and implement `value()`. Leaf Blots can either be Text or Embed Blots, so our section divider will be an Embed. Once created, Embed Blots' value is immutable, requiring deletion and reinsertion to change the content at that location.
 
-Our methodology is similar to before, except we inherit from an BlockEmbed. Embed also exists under `blots/embed`, but is meant for inline level blots. We want the block level implementation instead for dividers.
+Our methodology is similar to before, except we inherit from a BlockEmbed. Embed also exists under `blots/embed`, but is meant for inline level blots. We want the block level implementation instead for dividers.
 
 ```js
 let BlockEmbed = Quill.import('blots/block/embed');
@@ -210,7 +210,7 @@ Additionally we will add support for widths and heights, as unregistered formats
 class VideoBlot extends BlockEmbed {
   static create(url) {
     let node = super.create();
-
+    node.setAttribute('src', url);
     // Set non-format related attributes with static values
     node.setAttribute('frameborder', '0');
     node.setAttribute('allowfullscreen', true);
@@ -257,9 +257,7 @@ Note if you open your console and call [`getContents`](/docs/api/#getcontents), 
 {
   ops: [{
     insert: {
-      video: {
-        src: 'https://www.youtube.com/embed/QHH3iSeDBLo?showinfo=0'
-      }
+      video: 'https://www.youtube.com/embed/QHH3iSeDBLo?showinfo=0'
     },
     attributes: {
       height: '170',
@@ -304,7 +302,7 @@ TweetBlot.className = 'tweet';
 
 ### Final Polish
 
-We began with just a bunch of buttons and a Quill core that just understands plaintext. With Parchment, we able able to add bold, italic, links, blockquotes, headers, section dividers, images, videos, and even Tweets. All of this comes while maintaining a predictable and consistent document, allowing us to use Quill's powerful [APIs](/docs/api/) with these new formats and content.
+We began with just a bunch of buttons and a Quill core that just understands plaintext. With Parchment, we are able to add bold, italic, links, blockquotes, headers, section dividers, images, videos, and even Tweets. All of this comes while maintaining a predictable and consistent document, allowing us to use Quill's powerful [APIs](/docs/api/) with these new formats and content.
 
 Let's add some final polish to finish off our demo. It won't compare to Medium's UI, but we'll try to get close.
 
@@ -312,5 +310,5 @@ Let's add some final polish to finish off our demo. It won't compare to Medium's
 
 
 <!-- script -->
-<script src="//codepen.io/assets/embed/ei.js" type="text/javascript"></script>
+<script src="//codepen.io/assets/embed/ei.js"></script>
 <!-- script -->

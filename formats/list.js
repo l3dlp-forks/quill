@@ -1,108 +1,57 @@
-import extend from 'extend';
-import Delta from 'rich-text/lib/delta';
-import Parchment from 'parchment';
 import Block from '../blots/block';
 import Container from '../blots/container';
+import Quill from '../core/quill';
 
+class ListContainer extends Container {}
+ListContainer.blotName = 'list-container';
+ListContainer.tagName = 'OL';
 
 class ListItem extends Block {
+  static create(value) {
+    const node = super.create();
+    node.setAttribute('data-list', value);
+    return node;
+  }
+
   static formats(domNode) {
-    return domNode.tagName === this.tagName ? undefined : super.formats(domNode);
+    return domNode.getAttribute('data-list') || undefined;
+  }
+
+  static register() {
+    Quill.register(ListContainer);
+  }
+
+  constructor(scroll, domNode) {
+    super(scroll, domNode);
+    const ui = domNode.ownerDocument.createElement('span');
+    const listEventHandler = e => {
+      if (!scroll.isEnabled()) return;
+      const format = this.statics.formats(domNode, scroll);
+      if (format === 'checked') {
+        this.format('list', 'unchecked');
+        e.preventDefault();
+      } else if (format === 'unchecked') {
+        this.format('list', 'checked');
+        e.preventDefault();
+      }
+    };
+    ui.addEventListener('mousedown', listEventHandler);
+    ui.addEventListener('touchstart', listEventHandler);
+    this.attachUI(ui);
   }
 
   format(name, value) {
-    if (name === List.blotName && !value) {
-      this.replaceWith(Parchment.create(this.statics.scope));
+    if (name === this.statics.blotName && value) {
+      this.domNode.setAttribute('data-list', value);
     } else {
       super.format(name, value);
     }
   }
-
-  remove() {
-    if (this.prev == null && this.next == null) {
-      this.parent.remove();
-    } else {
-      super.remove();
-    }
-  }
-
-  replaceWith(name, value) {
-    this.parent.isolate(this.offset(this.parent), this.length());
-    if (name === this.parent.statics.blotName) {
-      this.parent.replaceWith(name, value);
-      return this;
-    } else {
-      this.parent.unwrap();
-      return super.replaceWith(name, value);
-    }
-  }
 }
-ListItem.blotName = 'list-item';
+ListItem.blotName = 'list';
 ListItem.tagName = 'LI';
 
+ListContainer.allowedChildren = [ListItem];
+ListItem.requiredContainer = ListContainer;
 
-class List extends Container {
-  static create(value) {
-    if (value === 'ordered') {
-      value = 'OL';
-    } else if (value === 'bullet') {
-      value = 'UL';
-    }
-    return super.create(value);
-  }
-
-  static formats(domNode) {
-    if (domNode.tagName === 'OL') return 'ordered';
-    if (domNode.tagName === 'UL') return 'bullet';
-    return undefined;
-  }
-
-  format(name, value) {
-    if (this.children.length > 0) {
-      this.children.tail.format(name, value);
-    }
-  }
-
-  formats() {
-    // We don't inherit from FormatBlot
-    return { [this.statics.blotName]: this.statics.formats(this.domNode) };
-  }
-
-  insertBefore(blot, ref) {
-    if (blot instanceof ListItem) {
-      super.insertBefore(blot, ref);
-    } else {
-      let index = ref == null ? this.length() : ref.offset(this);
-      let after = this.split(index);
-      after.parent.insertBefore(blot, after);
-    }
-  }
-
-  optimize() {
-    super.optimize();
-    let next = this.next;
-    if (next != null && next.prev === this &&
-        next.statics.blotName === this.statics.blotName &&
-        next.domNode.tagName === this.domNode.tagName) {
-      next.moveChildren(this);
-      next.remove();
-    }
-  }
-
-  replace(target) {
-    if (target.statics.blotName !== this.statics.blotName) {
-      let item = Parchment.create(this.statics.defaultChild);
-      target.moveChildren(item);
-      this.appendChild(item);
-    }
-    super.replace(target);
-  }
-}
-List.blotName = 'list';
-List.scope = Parchment.Scope.BLOCK_BLOT;
-List.tagName = ['OL', 'UL'];
-List.defaultChild = 'list-item';
-List.allowedChildren = [ListItem];
-
-
-export { ListItem, List as default };
+export { ListContainer, ListItem as default };

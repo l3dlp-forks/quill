@@ -13,7 +13,7 @@ Keyboard handlers are bound to a particular key and key modifiers. The `key` is 
 
 Key modifiers include: `metaKey`, `ctrlKey`, `shiftKey` and `altKey`. In addition, `shortKey` is a platform specific modifier equivalent to `metaKey` on a Mac and `ctrlKey` on Linux and Windows.
 
-Handlers will called with `this` bound to the keyboard instance and be passed the current selection range.
+Handlers will be called with `this` bound to the keyboard instance and be passed the current selection range.
 
 ```js
 quill.keyboard.addBinding({
@@ -104,7 +104,7 @@ quill.keyboard.addBinding({ key: Keyboard.keys.ENTER }, {
 
 #### format
 
-When an Array, handler will be called if *any* of the specified formats are active. When an Object, *all* specified formats conditions must be met. In either case, the context parameter will be an Object of all current active formats, the same returned by `quill.getFormat()`.
+When an Array, handler will be called if *any* of the specified formats are active. When an Object, *all* specified formats conditions must be met. In either case, the format property of the context parameter will be an Object of all current active formats, the same returned by `quill.getFormat()`.
 
 ```js
 var context = {
@@ -130,7 +130,7 @@ Regex that must match the text immediately preceding the user's selection's star
 // When the user types space...
 quill.keyboard.addBinding({ key: ' ' }, {
   collapsed: true,
-  format: { list: false },  // ...on an line that's not already a list
+  format: { list: false },  // ...on a line that's not already a list
   prefix: /^-$/,            // ...following a '-' character
   offset: 1,                // ...at the 1st position of the line,
                             // otherwise handler would trigger if the user
@@ -155,11 +155,13 @@ The same as [`prefix`](#prefix) except matching text immediately following the u
 
 ### Configuration
 
-By default, Quill comes with several useful key bindings, for example indenting lists with tabs. You can add your own upon initization.
+By default, Quill comes with several useful key bindings, for example indenting lists with tabs. You can add your own upon initialization.
 
 Some bindings are essential to preventing dangerous browser defaults, such as the enter and backspace keys. You cannot remove these bindings to revert to native browser behaviors. However since bindings specified in the configuration will run before Quill's defaults, you can handle special cases and propagate to Quill's otherwise.
 
 Adding a binding with `quill.keyboard.addBinding` will not run before Quill's because the defaults bindings will have been added by that point.
+
+Each binding config must contain `key` and `handler` options, and may optionally include any of the `context` options.
 
 ```javascript
 var bindings = {
@@ -183,9 +185,7 @@ var bindings = {
 
   list: {
     key: 'backspace',
-    context: {
-      format: ['list']
-    },
+    format: ['list'],
     handler: function(range, context) {
       if (context.offset === 0) {
         // When backspace on the first character of a list,
@@ -209,6 +209,6 @@ var quill = new Quill('#editor', {
 ```
 
 
-### Peformance
+### Performance
 
 Like DOM events, Quill key bindings are blocking calls on every match, so it is a bad idea to have a very expensive handler for a very common key binding. Apply the same performance best practices as you would when attaching to common blocking DOM events, like `scroll` or `mousemove`.

@@ -1,37 +1,5 @@
 ## Selection
 
-### blur
-
-Removes focus from the editor.
-
-**Methods**
-
-```javascript
-blur()
-```
-
-**Examples**
-
-```javascript
-quill.blur();
-```
-
-### focus
-
-Focuses the editor and restores its last range.
-
-**Methods**
-
-```javascript
-focus()
-```
-
-**Examples**
-
-```javascript
-quill.focus();
-```
-
 ### getBounds
 
 Retrieves the pixel position (relative to the editor container) and dimensions of a selection at a given location. The user's current selection need not be at that index. Useful for calculating where to place tooltips.
@@ -76,22 +44,6 @@ if (range) {
 }
 ```
 
-### hasFocus
-
-Checks if editor has focus. Note focus on toolbar, tooltips, does not count as the editor.
-
-**Methods**
-
-```javascript
-hasFocus(): Boolean
-```
-
-**Examples**
-
-```javascript
-quill.hasFocus();
-```
-
 ### setSelection
 
 Sets user selection to given range, which will also focus the editor. Providing `null` as the selection range will blur the editor. [Source](/docs/api/#events) may be `"user"`, `"api"`, or `"silent"`.
@@ -99,9 +51,9 @@ Sets user selection to given range, which will also focus the editor. Providing 
 **Methods**
 
 ```javascript
-setSelection(index: Number, length: Number, source: String = 'api')
+setSelection(index: Number, length: Number = 0, source: String = 'api')
 setSelection(range: { index: Number, length: Number },
-             souce: String = 'api')
+             source: String = 'api')
 ```
 
 **Examples**

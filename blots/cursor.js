@@ -1,19 +1,17 @@
-import Parchment from 'parchment';
-import Embed from './embed';
-import Emitter from '../core/emitter';
+import { EmbedBlot, Scope } from 'parchment';
+import TextBlot from './text';
 
-
-class Cursor extends Embed {
-  static value(domNode) {
+class Cursor extends EmbedBlot {
+  static value() {
     return undefined;
   }
 
-  constructor(domNode, selection) {
-    super(domNode);
+  constructor(scroll, domNode, selection) {
+    super(scroll, domNode);
     this.selection = selection;
     this.textNode = document.createTextNode(Cursor.CONTENTS);
     this.domNode.appendChild(this.textNode);
-    this._length = 0;
+    this.savedLength = 0;
   }
 
   detach() {
@@ -22,19 +20,21 @@ class Cursor extends Embed {
   }
 
   format(name, value) {
-    if (this._length !== 0) {
-      return super.format(name, value);
+    if (this.savedLength !== 0) {
+      super.format(name, value);
+      return;
     }
-    let target = this, index = 0;
-    while (target != null && target.statics.scope !== Parchment.Scope.BLOCK_BLOT) {
+    let target = this;
+    let index = 0;
+    while (target != null && target.statics.scope !== Scope.BLOCK_BLOT) {
       index += target.offset(target.parent);
       target = target.parent;
     }
     if (target != null) {
-      this._length = Cursor.CONTENTS.length;
+      this.savedLength = Cursor.CONTENTS.length;
       target.optimize();
       target.formatAt(index, Cursor.CONTENTS.length, name, value);
-      this._length = 0;
+      this.savedLength = 0;
     }
   }
 
@@ -44,10 +44,10 @@ class Cursor extends Embed {
   }
 
   length() {
-    return this._length;
+    return this.savedLength;
   }
 
-  position(index) {
+  position() {
     return [this.textNode, this.textNode.data.length];
   }
 
@@ -57,37 +57,91 @@ class Cursor extends Embed {
   }
 
   restore() {
-    if (this.selection.composing) return;
-    if (this.parent == null) return;
-    let textNode = this.textNode;
-    let range = this.selection.getNativeRange();
+    if (this.selection.composing || this.parent == null) return null;
+    const range = this.selection.getNativeRange();
     // Link format will insert text outside of anchor tag
-    while (this.domNode.lastChild != null && this.domNode.lastChild !== this.textNode) {
-      this.domNode.parentNode.insertBefore(this.domNode.lastChild, this.domNode);
+    while (
+      this.domNode.lastChild != null &&
+      this.domNode.lastChild !== this.textNode
+    ) {
+      this.domNode.parentNode.insertBefore(
+        this.domNode.lastChild,
+        this.domNode,
+      );
     }
-    if (this.textNode.data !== Cursor.CONTENTS) {
-      this.textNode.data = this.textNode.data.split(Cursor.CONTENTS).join('');
-      this.parent.insertBefore(Parchment.create(this.textNode), this);
-      this.textNode = document.createTextNode(Cursor.CONTENTS);
-      this.domNode.appendChild(this.textNode);
+
+    const prevTextBlot = this.prev instanceof TextBlot ? this.prev : null;
+    const prevTextLength = prevTextBlot ? prevTextBlot.length() : 0;
+    const nextTextBlot = this.next instanceof TextBlot ? this.next : null;
+    const nextText = nextTextBlot ? nextTextBlot.text : '';
+    const { textNode } = this;
+    // take text from inside this blot and reset it
+    const newText = textNode.data.split(Cursor.CONTENTS).join('');
+    textNode.data = Cursor.CONTENTS;
+
+    // proactively merge TextBlots around cursor so that optimization
+    // doesn't lose the cursor.  the reason we are here in cursor.restore
+    // could be that the user clicked in prevTextBlot or nextTextBlot, or
+    // the user typed something.
+    let mergedTextBlot;
+    if (prevTextBlot) {
+      mergedTextBlot = prevTextBlot;
+      if (newText || nextTextBlot) {
+        prevTextBlot.insertAt(prevTextBlot.length(), newText + nextText);
+        if (nextTextBlot) {
+          nextTextBlot.remove();
+        }
+      }
+    } else if (nextTextBlot) {
+      mergedTextBlot = nextTextBlot;
+      nextTextBlot.insertAt(0, newText);
+    } else {
+      const newTextNode = document.createTextNode(newText);
+      mergedTextBlot = this.scroll.create(newTextNode);
+      this.parent.insertBefore(mergedTextBlot, this);
     }
+
     this.remove();
-    if (range != null && range.start.node === textNode && range.end.node === textNode) {
-      this.selection.emitter.once(Emitter.events.SCROLL_OPTIMIZE, () => {
-        let [start, end] = [range.start.offset, range.end.offset].map(function(offset) {
-          return Math.max(0, Math.min(textNode.data.length, offset - 1));
-        });
-        this.selection.setNativeRange(textNode, start, textNode, end);
-      });
+    if (range) {
+      // calculate selection to restore
+      const remapOffset = (node, offset) => {
+        if (prevTextBlot && node === prevTextBlot.domNode) {
+          return offset;
+        }
+        if (node === textNode) {
+          return prevTextLength + offset - 1;
+        }
+        if (nextTextBlot && node === nextTextBlot.domNode) {
+          return prevTextLength + newText.length + offset;
+        }
+        return null;
+      };
+
+      const start = remapOffset(range.start.node, range.start.offset);
+      const end = remapOffset(range.end.node, range.end.offset);
+      if (start !== null && end !== null) {
+        return {
+          startNode: mergedTextBlot.domNode,
+          startOffset: start,
+          endNode: mergedTextBlot.domNode,
+          endOffset: end,
+        };
+      }
     }
+    return null;
   }
 
-  update(mutations) {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'characterData' && mutation.target === this.textNode) {
-        this.restore();
-      }
-    });
+  update(mutations, context) {
+    if (
+      mutations.some(mutation => {
+        return (
+          mutation.type === 'characterData' && mutation.target === this.textNode
+        );
+      })
+    ) {
+      const range = this.restore();
+      if (range) context.range = range;
+    }
   }
 
   value() {
@@ -97,7 +151,6 @@ class Cursor extends Embed {
 Cursor.blotName = 'cursor';
 Cursor.className = 'ql-cursor';
 Cursor.tagName = 'span';
-Cursor.CONTENTS = "\uFEFF";   // Zero width no break space
-
+Cursor.CONTENTS = '\uFEFF'; // Zero width no break space
 
 export default Cursor;

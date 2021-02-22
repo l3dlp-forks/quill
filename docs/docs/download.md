@@ -9,12 +9,12 @@ Quill comes ready to use in several convenient forms.
 
 ### CDN
 
-A globally distributed and available CDN is provided, backed by [Amazon Cloudfront](https://aws.amazon.com/cloudfront/).
+A globally distributed and available CDN is provided, backed by [Render](https://render.com/).
 
 ```html
 <!-- Main Quill library -->
-<script src="//cdn.quilljs.com/{{site.version}}/quill.js" type="text/javascript"></script>
-<script src="//cdn.quilljs.com/{{site.version}}/quill.min.js" type="text/javascript"></script>
+<script src="//cdn.quilljs.com/{{site.version}}/quill.js"></script>
+<script src="//cdn.quilljs.com/{{site.version}}/quill.min.js"></script>
 
 <!-- Theme included stylesheets -->
 <link href="//cdn.quilljs.com/{{site.version}}/quill.snow.css" rel="stylesheet">
@@ -22,7 +22,7 @@ A globally distributed and available CDN is provided, backed by [Amazon Cloudfro
 
 <!-- Core build with no theme, formatting, non-essential modules -->
 <link href="//cdn.quilljs.com/{{site.version}}/quill.core.css" rel="stylesheet">
-<script src="//cdn.quilljs.com/{{site.version}}/quill.core.js" type="text/javascript"></script>
+<script src="//cdn.quilljs.com/{{site.version}}/quill.core.js"></script>
 ```
 
 

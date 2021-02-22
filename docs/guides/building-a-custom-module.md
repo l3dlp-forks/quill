@@ -6,13 +6,13 @@ permalink: /guides/building-a-custom-module/
 
 Quill's core strength as an editor is its rich API and powerful customization capabilities. As you implement functionality on top of Quill's API, it may be convenient to organize this as a module. For the purpose of this guide, we will walk through one way to build a word counter module, a commonly found feature in many word processors.
 
-*Note: Internally modules is how much of Quill's functionality is organized. You can overwrite these default [modules](/docs/modules/) by implementing your own and registering it with the same name.*
+*Note: Internally modules are how much of Quill's functionality is organized. You can overwrite these default [modules](/docs/modules/) by implementing your own and registering it with the same name.*
 
 ### Counting Words
 
 At its core a word counter simply counts the number of words in the editor and displays this value in some UI. Thus we need to:
 
-1. Listen on text changes in Quill.
+1. Listen for text changes in Quill.
 1. Count the number of words.
 1. Display this value.
 
@@ -27,7 +27,7 @@ Quill.register('modules/counter', function(quill, options) {
     var text = quill.getText();
     // There are a couple issues with counting words
     // this way but we'll fix these later
-    container.innerHTML = text.split(/\s+/).length;
+    container.innerText = text.split(/\s+/).length;
   });
 });
 
@@ -51,9 +51,9 @@ Quill.register('modules/counter', function(quill, options) {
   quill.on('text-change', function() {
     var text = quill.getText();
     if (options.unit === 'word') {
-      container.innerHTML = text.split(/\s+/).length + ' words';
+      container.innerText = text.split(/\s+/).length + ' words';
     } else {
-      container.innerHTML = text.length + ' characters';
+      container.innerText = text.length + ' characters';
     }
   });
 });
@@ -80,7 +80,7 @@ var Counter = function(quill, options) {
   var _this = this;
   quill.on('text-change', function() {
     var length = _this.calculate();
-    container.innerHTML = length + ' ' + options.unit + 's';
+    container.innerText = length + ' ' + options.unit + 's';
   });
 };
 
@@ -141,7 +141,7 @@ class Counter {
     if (length !== 1) {
       label += 's';
     }
-    this.container.innerHTML = length + ' ' + label;
+    this.container.innerText = length + ' ' + label;
   }
 }
 
@@ -158,5 +158,5 @@ var quill = new Quill('#editor', {
 </code></pre></div>
 
 <!-- script -->
-<script src="//codepen.io/assets/embed/ei.js" type="text/javascript"></script>
+<script src="//codepen.io/assets/embed/ei.js"></script>
 <!-- script -->

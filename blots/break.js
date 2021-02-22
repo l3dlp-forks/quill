@@ -1,14 +1,13 @@
-import Embed from './embed';
+import { EmbedBlot } from 'parchment';
 
-
-class Break extends Embed {
-  static value(domNode) {
+class Break extends EmbedBlot {
+  static value() {
     return undefined;
   }
 
-  insertInto(parent, ref) {
-    if (parent.children.length === 0) {
-      super.insertInto(parent, ref);
+  optimize() {
+    if (this.prev || this.next) {
+      this.remove();
     }
   }
 
@@ -22,6 +21,5 @@ class Break extends Embed {
 }
 Break.blotName = 'break';
 Break.tagName = 'BR';
-
 
 export default Break;

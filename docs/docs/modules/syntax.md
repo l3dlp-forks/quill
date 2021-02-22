@@ -8,7 +8,7 @@ redirect_from:
 
 The Syntax Module enhances the Code Block format by automatically detecting and applying syntax highlighting. The excellent [highlight.js](https://highlightjs.org/) library is used as a dependency to parse and tokenize code blocks.
 
-In general, you may [configure](http://highlightjs.readthedocs.io/en/latest/api.html#configure-options) highlight.js as needed. However, Quill expects and requires the `useBR` option to be `false`.
+In general, you may [configure](https://highlightjs.readthedocs.io/en/latest/api.html#configure-options) highlight.js as needed. However, Quill expects and requires the `useBR` option to be `false`.
 
 
 ### Example
@@ -18,9 +18,9 @@ In general, you may [configure](http://highlightjs.readthedocs.io/en/latest/api.
 <link href="highlight.js/monokai-sublime.min.css" rel="stylesheet">
 
 <!-- Include the highlight.js library -->
-<script href="highlight.js" type="text/javascript"></script>
+<script href="highlight.js"></script>
 
-<script type="text/javascript">
+<script>
 hljs.configure({   // optionally configure hljs
   languages: ['javascript', 'ruby', 'python']
 });

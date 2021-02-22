@@ -7,7 +7,7 @@ redirect_from:
   - /docs/modules/multi-cursors/
 ---
 
-Modules allow Quill's behavior and functionality to customized. Several officially supported modules are available to pick and choose from, some with additional configuration options and APIs. Refer to their respective documentation pages for more details.
+Modules allow Quill's behavior and functionality to be customized. Several officially supported modules are available to pick and choose from, some with additional configuration options and APIs. Refer to their respective documentation pages for more details.
 
 To enable a module, simply include it in Quill's configuration.
 
@@ -39,7 +39,9 @@ class PlainClipboard extends Clipboard {
     if (typeof html === 'string') {
       this.container.innerHTML = html;
     }
-    return new Delta().insert(this.container.innerText);
+    let text = this.container.innerText;
+    this.container.innerHTML = '';
+    return new Delta().insert(text);
   }
 }
 

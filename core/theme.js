@@ -1,7 +1,3 @@
-import extend from 'extend';
-import Emitter from './emitter';
-
-
 class Theme {
   constructor(quill, options) {
     this.quill = quill;
@@ -10,7 +6,7 @@ class Theme {
   }
 
   init() {
-    Object.keys(this.options.modules).forEach((name) => {
+    Object.keys(this.options.modules).forEach(name => {
       if (this.modules[name] == null) {
         this.addModule(name);
       }
@@ -18,17 +14,19 @@ class Theme {
   }
 
   addModule(name) {
-    let moduleClass = this.quill.constructor.import(`modules/${name}`);
-    this.modules[name] = new moduleClass(this.quill, this.options.modules[name] || {});
+    const ModuleClass = this.quill.constructor.import(`modules/${name}`);
+    this.modules[name] = new ModuleClass(
+      this.quill,
+      this.options.modules[name] || {},
+    );
     return this.modules[name];
   }
 }
 Theme.DEFAULTS = {
-  modules: {}
+  modules: {},
 };
 Theme.themes = {
-  'default': Theme
+  default: Theme,
 };
-
 
 export default Theme;

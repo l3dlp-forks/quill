@@ -8,13 +8,13 @@ permalink: /guides/comparison-with-other-rich-text-editors/
 
 CKEditor and TinyMCE are both very widely used, having been around for over a decade. Quill introduces several new ideas that separate it from these traditional editors:
 
-- Treat `contenteditable` as an input, not a complete editor or API. Browsers never fully agreed on or specified the complete scope of `contenteditable`. Left to their own interpretations, each ended with different implementations that featured their own quirks and a proliferation of bugs, earning `contenteditable` deserved notoriety. It is still possible today crash an entire browser, using `contenteditable` APIs.
+- It treats `contenteditable` as an input, not a complete editor or API. Browsers never fully agreed on or specified the complete scope of `contenteditable`. Left to their own interpretations, each ended with different implementations that featured their own quirks and a proliferation of bugs, earning `contenteditable` deserved notoriety. It is still possible today to crash an entire browser using `contenteditable` APIs.
 
-- Offer a substantive API on top of the DOM. Most of CKEditor and TinyMCE's APIs offer little more than syntactic sugar on top of existing DOM APIs. Quill maintains internal document model and does not rely on the DOM as the source of truth, allow it to offer far more powerful and relevant APIs for text editing.
+- It offers a substantive API on top of the DOM. Most of CKEditor and TinyMCE's APIs offer little more than syntactic sugar on top of existing DOM APIs. Quill maintains an internal document model and does not rely on the DOM as the source of truth, allowing it to offer far more powerful and relevant APIs for text editing.
 
-- Allow customization and new additions of formats and content. Quill considers the web as a target output, not just paper. Therefore, in additional to supporting traditional formats commonly found in word processors, like bold, italics and lists, Quill allows the definition of entirely new formats and content it has not imagined. Quill's users have already added customizations to embed slide decks, interactive checklists, and 3D models.
+- It allows customization and new additions of formats and content. Quill considers the web as a target output, not just paper. Therefore, in addition to supporting traditional formats commonly found in word processors (like bold, italics and lists), Quill allows the definition of entirely new formats and content not previously imagined. Quill's users have already added customizations to embed slide decks, interactive checklists and 3D models.
 
-CKEditor and TinyMCE are different editors but are both so different from Quill in the same ways that the nuances between them are not distinct and so are compared together. Nevertheless, CKEditor or TinyMCE might be a better choice if:
+Although there are differences between them, CKEditor and TinyMCE are compared together because they differ from Quill in similar ways. Nevertheless, CKEditor or TinyMCE might be a better choice if:
 
 - You need to support very old browsers. Quill follows the policy of many other Javascript libraries of supporting the latest two versions of each major browser.
 
@@ -35,22 +35,22 @@ Draft is often compared with Quill, but Draft, by its own description, is a "Ric
   </span>
   ```
 
-- Draft's API inherits primitives and ideas from React, that is more appropriate for general websites. Quill's only use case is rich text content so its API can be much simpler and specific towards this use case. API simplicity and design is subjective so the best metric for you might be to think of a common task, like bolding a range of text, and try to figure out how to do it in Quill and how to do it in Draft.
+- Draft's API inherits primitives and ideas from React that are more appropriate for general websites. Quill's only use case is rich text content allowing for a simpler API geared specifically for that use case. API simplicity is subjective, so the best metric for you might be to think of a common task, like bolding a range of text, and try to figure out how to do it in Quill and how to do it in Draft.
 
--  React, React DOM, and immutable.js are dependencies of Draft which adds a lot of weight for users not already on React.
+- React, React DOM, and immutable.js are dependencies of Draft which add a lot of weight for users not already using React.
 
 The main difference is still that Quill is a ready to use rich text editor, with user interactions considered and interfaces thought out and implemented. Draft provides the building blocks but you will have to implement all the pieces above the data layer yourself.
 
 
 ## ProseMirror
 
-ProseMirror is relatively new but has already captured signficant attention, being built by the same author of  CodeMirror. That being said a robust comparison of the product and implementation is premature as ProseMirror is still in the development stages, as noted in their README:
+ProseMirror is relatively new but has already captured signficant attention, being built by the same author of  CodeMirror. That being said a robust comparison of the product and implementation is premature since ProseMirror is still in the development stages, as noted in their README:
 
 > NOTE: This project is in BETA stage. It isn't thoroughly tested, and the API might still change across 0.x releases. You are welcome to use it, but don't expect it to be very stable yet.
 
 Instead we will compare the ideas and goals:
 
-- Both Quill and ProseMirror implement and maintain a data model to operate on with APIs, instead of allowing users to modify DOM directly.
+- Both Quill and ProseMirror implement and maintain a data model to operate on with APIs, instead of allowing users to modify the DOM directly.
 
 - Support realtime collaboration. Quill users are already doing so in production.
 
